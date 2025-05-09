@@ -1,7 +1,7 @@
 import CourseNavigation from "./Navigation";
 import { Navigate, Route, Routes } from "react-router";
-import Modules from "./1234/Modules";
-import Home from "./1234/Home";
+import Modules from "./Modules";
+import Home from "./Home";
 export default function Courses() {
   return (
     <div id="wd-courses">

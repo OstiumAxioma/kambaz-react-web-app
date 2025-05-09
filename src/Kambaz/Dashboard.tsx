@@ -9,13 +9,13 @@ export default function Dashboard() {
           <img src="/images/reactjs.jpg" width={48} />
           <div>
             <a className="wd-dashboard-course-link"
-              href="#/Kanbas/Courses/1234/Home">
+              href="#/Kambaz/Courses/1234/Home">
               CS1234 React JS
             </a>
             <p className="wd-dashboard-course-title">
               Full Stack software developer
             </p>
-            <a href="#/Kanbas/Courses/1234/Home"> Go </a>
+            <a href="#/Kambaz/Courses/1234/Home"> Go </a>
           </div>
         </div>
 
