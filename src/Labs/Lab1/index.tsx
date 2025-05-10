@@ -15,9 +15,10 @@ export default function Lab1() {
             </a>
         </p>
         <h3>Lab Source Code</h3>
+        <h4>By Student Zhong Yun</h4>
         <p>
             <a href="https://github.com/OstiumAxioma/kambaz-react-web-app">
-                Go to Github Repository
+                Go to Zhong Yun's Github Repository
             </a>
         </p>
         <h2>Lab1 Sample Code</h2>

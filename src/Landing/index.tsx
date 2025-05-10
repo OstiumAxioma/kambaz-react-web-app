@@ -1,12 +1,21 @@
 import { Link } from "react-router-dom";
-
-export default function Landing() {
+export default function Signin() {
   return (
-    <div>
+    <div id="wd-signin-screen">
       <h1>Welcome to Zhong Yun's Kambaz</h1>
-      <p>
-        <Link to="/Kambaz">Go to Lab Exercises</Link>
-      </p>
+      <h3>Sign in</h3>
+      <input className="wd-username" placeholder="username" /> <br />
+      <input className="wd-password" placeholder="password" type="password" /> <br />
+      <Link id="wd-signin-btn" to="/Kambaz/Dashboard">
+        Sign in
+      </Link>
+      <br />
+      <Link id="wd-signup-link" to="/Kambaz/Account/Signup">
+        Sign up
+      </Link>
+      <br />
+      <Link id="wd-signup-link" to="/Labs/Lab1">
+        Go To Labs Exercises
+      </Link>
     </div>
-  );
-}
+);}
