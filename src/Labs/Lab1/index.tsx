@@ -1,7 +1,26 @@
+import { Link } from "react-router-dom";
 export default function Lab1() {
     return (
     <div id="wd-lab1">
-        <h2>Lab 1</h2>
+        <h1>Landing Page - Zhong Yun Section 04 CS5610 Summer 1 2025</h1>
+        <p>
+            <Link to="/Kambaz">Go to Kambaz (Lab Exercises)</Link>
+        </p>
+        <h2>Source Code</h2>
+        <h3>CS5610 Developing Full Stack WERN Web Applications</h3>
+        <h4>By Dr. Jose Annunziato</h4>
+        <p>
+            <a href="https://docs.google.com/document/d/1R7IuxYxmtciUQ0SQC0msNl1g_Fa_Yp-u9cV3zPdCcsY/edit?tab=t.0#heading=h.m7xgzu6blm2f">
+                Go to Google Doc Documents
+            </a>
+        </p>
+        <h3>Lab Source Code</h3>
+        <p>
+            <a href="https://github.com/OstiumAxioma/kambaz-react-web-app">
+                Go to Github Repository
+            </a>
+        </p>
+        <h2>Lab1 Sample Code</h2>
         <h3>HTML Examples</h3>
         <div id="wd-h-tag">
             <h4>Heading Tags</h4>

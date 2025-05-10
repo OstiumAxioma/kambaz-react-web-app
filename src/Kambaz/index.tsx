@@ -4,6 +4,7 @@ import Account from "./Account";
 import Dashboard from "./Dashboard";
 import KambazNavigation from "./Navigation";
 import Courses from "./Courses";
+import Landing from "../Landing";
 export default function Kambaz() {
   return (
     <div id="wd-kambaz">
@@ -15,6 +16,7 @@ export default function Kambaz() {
           <td valign="top">
             <Routes>
               <Route path="/" element={<Navigate to="Account" />} />
+              <Route path="/Landing" element={<Landing />} />
               <Route path="/Account/*" element={<Account />} />
               <Route path="/Dashboard" element={<Dashboard />} />
               <Route path="/Courses/:cid/*" element={<Courses />} />
