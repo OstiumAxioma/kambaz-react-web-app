@@ -1,6 +1,7 @@
 import { FaSearch, FaPlus, FaCheckCircle } from "react-icons/fa";
 import { MdMenuBook } from "react-icons/md";
 import { ListGroup } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 export default function Assignments() {
   return (
@@ -39,7 +40,9 @@ export default function Assignments() {
             <ListGroup.Item className="d-flex align-items-start border-start border-4 border-success mb-3 p-3 wd-assignment-list-item">
               <MdMenuBook className="text-success fs-4 me-3 mt-1" />
               <div className="flex-grow-1">
-                <div className="fw-bold fs-5">A1</div>
+                <div className="fw-bold fs-5">
+                  <Link to="/Kambaz/Courses/1234/Assignments/1/edit" className="text-decoration-none text-dark">A1</Link>
+                </div>
                 <div className="small">
                   <span className="text-danger">Multiple Modules</span>
                   <span className="text-muted"> | Not available until May 6 at 12:00am</span>
