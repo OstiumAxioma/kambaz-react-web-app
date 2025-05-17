@@ -8,12 +8,9 @@ import Landing from "../Landing";
 export default function Kambaz() {
   return (
     <div id="wd-kambaz">
-      <table>
-        <tr>
-          <td valign="top">
+
             <KambazNavigation />
-          </td>
-          <td valign="top">
+          <div>
             <Routes>
               <Route path="/" element={<Navigate to="Account" />} />
               <Route path="/Landing" element={<Landing />} />
@@ -23,8 +20,6 @@ export default function Kambaz() {
               <Route path="/Calendar" element={<h1>Calendar</h1>} />
               <Route path="/Inbox" element={<h1>Inbox</h1>} />
             </Routes>
-          </td>
-        </tr>
-      </table>
+          </div>
     </div>
   );}
