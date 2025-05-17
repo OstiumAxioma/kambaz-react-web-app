@@ -1,7 +1,7 @@
 //import React from "react";
 import { Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
-
+/*b2*/
 export default function Signup() {
   return (
     <div id="wd-signup-screen">
