@@ -1,5 +1,5 @@
 import CourseNavigation from "./Navigation";
-import { Navigate, Route, Routes, useParams } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 import Modules from "./Modules";
 import Home from "./Home";
 import Assignments from "./Assignments";
@@ -7,12 +7,9 @@ import AssignmentEditor from "./Assignments/editor";
 import EditAssignment from "./Assignments/EditAssignment";
 import { FaAlignJustify } from "react-icons/fa";
 import PeopleTable from "./People/Table";
-import { courses } from "../Database";
 import Breadcrumb from "./Breadcrumb";
 
 export default function Courses() {
-  const { cid } = useParams();
-  const course = courses.find((c) => c._id === cid);
 
   return (
     <div id="wd-courses">

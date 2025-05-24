@@ -1,4 +1,3 @@
-import React from "react";
 import type { ReactNode } from "react";
 export default function Square({ children }: { children: ReactNode }) {
   const num = Number(children);
