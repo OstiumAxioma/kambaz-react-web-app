@@ -1,8 +1,9 @@
 import Lab1 from "./Lab1";
-import { Route, Routes, Navigate } from "react-router";
-import TOC from "./TOC.tsx";
 import Lab2 from "./Lab2";
 import Lab3 from "./Lab3";
+import { Route, Routes, Navigate } from "react-router";
+import TOC from "./TOC.tsx";
+
 export default function Labs() {
   return (
     <div>
