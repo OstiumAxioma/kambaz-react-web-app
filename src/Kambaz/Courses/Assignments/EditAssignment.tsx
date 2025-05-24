@@ -1,11 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { Form, Button, Card, Badge, CloseButton } from "react-bootstrap";
+import { Link, useParams } from "react-router-dom";
+import { assignments } from "../../Database";
+
+interface Assignment {
+  _id: string;
+  title: string;
+  course: string;
+}
 
 export default function EditAssignment() {
+  const { cid, aid } = useParams();
   const [assignees, setAssignees] = useState<string[]>(["Everyone"]);
   const [input, setInput] = useState("");
   const [submissionType, setSubmissionType] = useState("Online");
+  const [assignment, setAssignment] = useState<Assignment | null>(null);
+
+  useEffect(() => {
+    const foundAssignment = assignments.find((a: Assignment) => a._id === aid);
+    if (foundAssignment) {
+      setAssignment(foundAssignment);
+    }
+  }, [aid]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => setInput(e.target.value);
 
@@ -23,13 +40,27 @@ export default function EditAssignment() {
     setAssignees(assignees.filter((a) => a !== name));
   };
 
+  if (!assignment) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="container mt-4">
-      <h3>Edit Assignment</h3>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h3>Edit Assignment</h3>
+        <div>
+          <Link to={`/Kambaz/Courses/${cid}/Assignments`}>
+            <Button variant="secondary" className="me-2">Cancel</Button>
+          </Link>
+          <Link to={`/Kambaz/Courses/${cid}/Assignments`}>
+            <Button variant="primary">Save</Button>
+          </Link>
+        </div>
+      </div>
       <Form>
         <Form.Group className="mb-3" controlId="assignmentName">
           <Form.Label>Assignment Name</Form.Label>
-          <Form.Control type="text" placeholder="Enter assignment name" />
+          <Form.Control type="text" placeholder="Enter assignment name" defaultValue={assignment.title} />
         </Form.Group>
         <Form.Group className="mb-3" controlId="assignmentDescription">
           <Form.Label>Description</Form.Label>
@@ -37,7 +68,7 @@ export default function EditAssignment() {
         </Form.Group>
         <Form.Group className="mb-3" controlId="assignmentPoints">
           <Form.Label>Points</Form.Label>
-          <Form.Control type="number" placeholder="Enter points" />
+          <Form.Control type="number" placeholder="Enter points" defaultValue={100} />
         </Form.Group>
         <Form.Group className="mb-3" controlId="assignmentDueDate">
           <Form.Label>Due Date</Form.Label>
@@ -107,9 +138,6 @@ export default function EditAssignment() {
             </div>
           </Card.Body>
         </Card>
-        <Button variant="primary" type="submit">
-          Save
-        </Button>
       </Form>
     </div>
   );
