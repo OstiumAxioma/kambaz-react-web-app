@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import FormControl from "react-bootstrap/esm/FormControl";
 export default function ObjectStateVariable() {
   const [person, setPerson] = useState({ name: "Peter", age: 24 });
