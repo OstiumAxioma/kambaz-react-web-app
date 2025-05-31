@@ -29,9 +29,6 @@ export default function Dashboard() {
   
   // State to toggle between enrolled courses and all courses
   const [showAllCourses, setShowAllCourses] = useState(false);
-  
-  // Add a state to force re-render when enrollments change
-  const [setEnrollmentTrigger] = useState(0);
 
   // Check if current user has edit permissions (FACULTY or ADMIN)
   const canEdit = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
@@ -81,8 +78,8 @@ export default function Dashboard() {
         dispatch(addEnrollment(newEnrollment));
         console.log("Created enrollment:", newEnrollment);
         
-        // Trigger re-render by updating the enrollment trigger
-        setEnrollmentTrigger(prev => prev + 1);
+        // // Trigger re-render by updating the enrollment trigger
+        // setEnrollmentTrigger(prev => prev + 1);
         
         alert("Course added and enrolled successfully!");
         
