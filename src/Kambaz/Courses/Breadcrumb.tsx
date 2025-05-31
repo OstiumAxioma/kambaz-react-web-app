@@ -1,10 +1,7 @@
-import { useLocation, useParams } from "react-router-dom";
-import { courses } from "../Database";
+import { useLocation } from "react-router-dom";
 
-export default function Breadcrumb() {
-  const { cid } = useParams();
+export default function Breadcrumb({ course }: { course?: any }) {
   const location = useLocation();
-  const course = courses.find((c) => c._id === cid);
   
   // Get the current section from the pathname
   const pathParts = location.pathname.split("/");

@@ -1,25 +1,33 @@
-import { Routes, Route, Navigate }
-  from "react-router";
-import Account from "./Account";
-import Dashboard from "./Dashboard";
 import KambazNavigation from "./Navigation";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Dashboard from "./Dashboard";
 import Courses from "./Courses";
-import Landing from "../Landing";
+import Account from "./Account";
+import ProtectedRoute from "./Account/ProtectedRoute";
 import "./styles.css";
+
 export default function Kambaz() {
   return (
     <div id="wd-kambaz">
-          <KambazNavigation />
-          <div className="wd-main-content-offset p-3">
-            <Routes>
-              <Route path="/" element={<Navigate to="Account" />} />
-              <Route path="/Landing" element={<Landing />} />
-              <Route path="/Account/*" element={<Account />} />
-              <Route path="/Dashboard" element={<Dashboard />} />
-              <Route path="/Courses/:cid/*" element={<Courses />} />
-              <Route path="/Calendar" element={<h1>Calendar</h1>} />
-              <Route path="/Inbox" element={<h1>Inbox</h1>} />
-            </Routes>
-          </div>
+      <KambazNavigation />
+      <div className="wd-main-content-offset p-3">
+        <Routes>
+          <Route path="/" element={<Navigate to="Dashboard" />} />
+          <Route path="Account/*" element={<Account />} />
+          <Route path="Dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="Courses/:cid/*" element={
+            <ProtectedRoute>
+              <Courses />
+            </ProtectedRoute>
+          } />
+          <Route path="Calendar" element={<h1>Calendar</h1>} />
+          <Route path="Inbox" element={<h1>Inbox</h1>} />
+        </Routes>
+      </div>
     </div>
-  );}
+  );
+}
