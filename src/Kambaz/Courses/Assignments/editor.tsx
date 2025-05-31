@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, Button, Badge } from "react-bootstrap";
 import { Link } from "react-router-dom";

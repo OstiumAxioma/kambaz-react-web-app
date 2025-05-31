@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Row, Col, Card, Button, Form, Alert } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setCurrentUser } from "./Account/reducer";
 import { addCourse, deleteCourse, updateCourse } from "./Courses/reducer";
-import { addEnrollment } from "./Account/enrollmentsReducer";
+import { addEnrollment, enrollUserInCourse, unenrollUserFromCourse } from "./Account/enrollmentsReducer";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function Dashboard() {
@@ -27,8 +27,11 @@ export default function Dashboard() {
     image: ""
   });
   
+  // State to toggle between enrolled courses and all courses
+  const [showAllCourses, setShowAllCourses] = useState(false);
+  
   // Add a state to force re-render when enrollments change
-  const [enrollmentTrigger, setEnrollmentTrigger] = useState(0);
+  const [setEnrollmentTrigger] = useState(0);
 
   // Check if current user has edit permissions (FACULTY or ADMIN)
   const canEdit = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
@@ -110,6 +113,22 @@ export default function Dashboard() {
     dispatch(deleteCourse(courseId));
   };
 
+  const handleEnroll = (courseId: string) => {
+    dispatch(enrollUserInCourse({ userId: currentUser._id, courseId }));
+  };
+
+  const handleUnenroll = (courseId: string) => {
+    dispatch(unenrollUserFromCourse({ userId: currentUser._id, courseId }));
+  };
+
+  const isUserEnrolled = (courseId: string) => {
+    return enrollments.some(
+      (enrollment: any) =>
+        enrollment.user === currentUser._id &&
+        enrollment.course === courseId
+    );
+  };
+
   // Calculate enrolled courses (enrollmentTrigger forces re-calculation when enrollments change)
   const enrolledCourses = courses.filter((course: any) =>
     enrollments.some(
@@ -117,6 +136,9 @@ export default function Dashboard() {
         enrollment.user === currentUser._id &&
         enrollment.course === course._id
      ));
+
+  // Determine which courses to display
+  const coursesToDisplay = showAllCourses ? courses : enrolledCourses;
 
   return (
     <div id="wd-dashboard" className="p-4">
@@ -128,15 +150,27 @@ export default function Dashboard() {
             Role: {currentUser.role} | Username: {currentUser.username}
           </small>
         </div>
-        <Button variant="outline-danger" onClick={signout}>
-          Sign out
-        </Button>
+        <div className="d-flex gap-2">
+          <Button 
+            variant="primary" 
+            onClick={() => setShowAllCourses(!showAllCourses)}
+          >
+            {showAllCourses ? "My Courses" : "All Courses"}
+          </Button>
+          <Button variant="outline-danger" onClick={signout}>
+            Sign out
+          </Button>
+        </div>
       </div>
 
       <h1 id="wd-dashboard-title">Dashboard</h1>
       <hr />
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 id="wd-dashboard-published">Enrolled Courses ({enrolledCourses.length})</h2>
+        <h2 id="wd-dashboard-published">
+          {showAllCourses 
+            ? `All Courses (${courses.length})` 
+            : `Enrolled Courses (${enrolledCourses.length})`}
+        </h2>
         {canEdit && (
           <div>
             <Button
@@ -239,29 +273,48 @@ export default function Dashboard() {
       <hr />
 
       <div id="wd-dashboard-courses">
-        {enrolledCourses.length === 0 ? (
+        {coursesToDisplay.length === 0 ? (
           <Alert variant="info">
-            You are not currently enrolled in any courses.
+            {showAllCourses 
+              ? "No courses available." 
+              : "You are not currently enrolled in any courses."}
           </Alert>
         ) : (
           <Row xs={1} md={2} lg={3} xl={4} className="g-4">
-            {enrolledCourses.map((course: any) => (
-              <Col key={course._id} className="wd-dashboard-course">
-                <Card style={{ width: "300px" }}>
-                  <Link
-                    to={`/Kambaz/Courses/${course._id}/Home`}
-                    className="wd-dashboard-course-link text-decoration-none text-dark"
-                  >
-                    <Card.Img
-                      variant="top"
-                      src={course.image || "/images/reactjs.jpg"}
-                      width="100%"
-                      height={160}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = "/images/reactjs.jpg";
-                      }}
-                    />
+            {coursesToDisplay.map((course: any) => {
+              const isEnrolled = isUserEnrolled(course._id);
+              return (
+                <Col key={course._id} className="wd-dashboard-course">
+                  <Card style={{ width: "300px" }}>
+                    {/* Only link to course if user is enrolled */}
+                    {isEnrolled ? (
+                      <Link
+                        to={`/Kambaz/Courses/${course._id}/Home`}
+                        className="wd-dashboard-course-link text-decoration-none text-dark"
+                      >
+                        <Card.Img
+                          variant="top"
+                          src={course.image || "/images/reactjs.jpg"}
+                          width="100%"
+                          height={160}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/images/reactjs.jpg";
+                          }}
+                        />
+                      </Link>
+                    ) : (
+                      <Card.Img
+                        variant="top"
+                        src={course.image || "/images/reactjs.jpg"}
+                        width="100%"
+                        height={160}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/images/reactjs.jpg";
+                        }}
+                      />
+                    )}
                     <Card.Body>
                       <Card.Title className="wd-dashboard-course-title text-nowrap overflow-hidden">
                         {course.name}
@@ -272,18 +325,39 @@ export default function Dashboard() {
                       >
                         {course.description}
                       </Card.Text>
-                      <div className="d-flex justify-content-between">
-                        <Link
-                          to={`/Kambaz/Courses/${course._id}/Home`}
-                          className="text-decoration-none"
-                        >
-                          <Button variant="primary">Go</Button>
-                        </Link>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <div>
+                          {isEnrolled ? (
+                            <>
+                              <Link
+                                to={`/Kambaz/Courses/${course._id}/Home`}
+                                className="text-decoration-none"
+                              >
+                                <Button variant="primary" className="me-2">Go</Button>
+                              </Link>
+                              <Button 
+                                variant="danger" 
+                                size="sm"
+                                onClick={() => handleUnenroll(course._id)}
+                              >
+                                Unenroll
+                              </Button>
+                            </>
+                          ) : (
+                            <Button 
+                              variant="success" 
+                              onClick={() => handleEnroll(course._id)}
+                            >
+                              Enroll
+                            </Button>
+                          )}
+                        </div>
                         {canEdit && (
                           <div>
                             <Button
                               variant="warning"
                               className="me-2"
+                              size="sm"
                               id="wd-edit-course-click"
                               onClick={(e) => {
                                 e.preventDefault();
@@ -294,6 +368,7 @@ export default function Dashboard() {
                             </Button>
                             <Button
                               variant="danger"
+                              size="sm"
                               id="wd-delete-course-click"
                               onClick={(e) => {
                                 e.preventDefault();
@@ -306,10 +381,10 @@ export default function Dashboard() {
                         )}
                       </div>
                     </Card.Body>
-                  </Link>
-                </Card>
-              </Col>
-            ))}
+                  </Card>
+                </Col>
+              );
+            })}
           </Row>
         )}
       </div>

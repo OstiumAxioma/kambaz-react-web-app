@@ -25,6 +25,26 @@ const enrollmentsSlice = createSlice({
         !(e.user === userId && e.course === courseId)
       );
     },
+    enrollUserInCourse: (state, { payload: { userId, courseId } }) => {
+      // Check if enrollment already exists
+      const existingEnrollment = state.enrollments.find((e: any) => 
+        e.user === userId && e.course === courseId
+      );
+      
+      if (!existingEnrollment) {
+        const newEnrollment = {
+          _id: `enrollment_${Date.now()}`,
+          user: userId,
+          course: courseId,
+        };
+        state.enrollments = [...state.enrollments, newEnrollment] as any;
+      }
+    },
+    unenrollUserFromCourse: (state, { payload: { userId, courseId } }) => {
+      state.enrollments = state.enrollments.filter((e: any) => 
+        !(e.user === userId && e.course === courseId)
+      );
+    },
     setEnrollments: (state, { payload: enrollments }) => {
       state.enrollments = enrollments;
     },
@@ -35,6 +55,8 @@ export const {
   addEnrollment, 
   removeEnrollment, 
   removeEnrollmentByUserAndCourse,
+  enrollUserInCourse,
+  unenrollUserFromCourse,
   setEnrollments 
 } = enrollmentsSlice.actions;
 

@@ -9,12 +9,66 @@ import { FaAlignJustify } from "react-icons/fa";
 import PeopleTable from "./People/Table";
 import Breadcrumb from "./Breadcrumb";
 import { useSelector } from "react-redux";
+import { Alert, Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 // import { courses } from "../Database";
 export default function Courses() {
   const { cid } = useParams();
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
   const { courses } = useSelector((state: any) => state.coursesReducer);
+  const { enrollments } = useSelector((state: any) => state.enrollmentsReducer);
   const course = courses.find((course: any) => course._id === cid);
+
+  // Check if current user is enrolled in this course
+  const isEnrolled = enrollments.some(
+    (enrollment: any) =>
+      enrollment.user === currentUser._id &&
+      enrollment.course === cid
+  );
+
+  // Check if current user has edit permissions (FACULTY or ADMIN)
+  const canEdit = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
+
+  // If user is not enrolled and not faculty/admin, redirect to dashboard
+  if (!isEnrolled && !canEdit) {
+    return (
+      <div className="container mt-5">
+        <Alert variant="warning" className="text-center">
+          <Alert.Heading>Access Denied</Alert.Heading>
+          <p>
+            You are not enrolled in this course. Please enroll in the course from the Dashboard to access the content.
+          </p>
+          <hr />
+          <div className="d-flex justify-content-center">
+            <Link to="/Kambaz/Dashboard">
+              <Button variant="primary">Return to Dashboard</Button>
+            </Link>
+          </div>
+        </Alert>
+      </div>
+    );
+  }
+
+  // If course doesn't exist
+  if (!course) {
+    return (
+      <div className="container mt-5">
+        <Alert variant="danger" className="text-center">
+          <Alert.Heading>Course Not Found</Alert.Heading>
+          <p>
+            The course you're looking for doesn't exist or has been removed.
+          </p>
+          <hr />
+          <div className="d-flex justify-content-center">
+            <Link to="/Kambaz/Dashboard">
+              <Button variant="primary">Return to Dashboard</Button>
+            </Link>
+          </div>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div id="wd-courses">
