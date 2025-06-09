@@ -8,6 +8,11 @@ export const REMOTE_SERVER = (import.meta.env.VITE_REMOTE_SERVER || "http://loca
 export const USERS_API = `${REMOTE_SERVER}/api/users`;
 export const COURSES_API = `${REMOTE_SERVER}/api/courses`;
 
+// Debug logging
+console.log('Environment VITE_REMOTE_SERVER:', import.meta.env.VITE_REMOTE_SERVER);
+console.log('Resolved REMOTE_SERVER:', REMOTE_SERVER);
+console.log('USERS_API:', USERS_API);
+
 export const createCourse = async (course: any) => {
   const { data } = await axiosWithCredentials.post(COURSES_API, course);
   return data;
@@ -34,6 +39,7 @@ export const unenrollFromCourse = async (userId: string, courseId: string) => {
 };
 
 export const signin = async (credentials: any) => {
+  console.log('Attempting signin to:', `${USERS_API}/signin`);
   const response = await axiosWithCredentials.post(`${USERS_API}/signin`, credentials);
   return response.data;
 };
