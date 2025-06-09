@@ -1,7 +1,8 @@
 import axios from "axios";
 const axiosWithCredentials = axios.create({ withCredentials: true });
 
-const REMOTE_SERVER = import.meta.env.VITE_REMOTE_SERVER || "http://localhost:4000";
+// Remove trailing slash to prevent double slashes in URLs
+const REMOTE_SERVER = (import.meta.env.VITE_REMOTE_SERVER || "http://localhost:4000").replace(/\/$/, '');
 const USERS_API = `${REMOTE_SERVER}/api/users`;
 
 export const enrollInCourse = async (userId: string, courseId: string) => {

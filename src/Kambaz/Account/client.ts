@@ -3,7 +3,8 @@ const axiosWithCredentials = axios.create({ withCredentials: true });
 // Set up axios defaults to include credentials
 axios.defaults.withCredentials = true;
 
-export const REMOTE_SERVER = import.meta.env.VITE_REMOTE_SERVER || "http://localhost:4000";
+// Remove trailing slash to prevent double slashes in URLs
+export const REMOTE_SERVER = (import.meta.env.VITE_REMOTE_SERVER || "http://localhost:4000").replace(/\/$/, '');
 export const USERS_API = `${REMOTE_SERVER}/api/users`;
 export const COURSES_API = `${REMOTE_SERVER}/api/courses`;
 
