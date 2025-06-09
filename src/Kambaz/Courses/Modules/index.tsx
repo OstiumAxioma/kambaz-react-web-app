@@ -7,7 +7,6 @@ import ModuleControlButtons from "./ModuleControlButtons";
 import { useParams } from "react-router-dom";
 import { setModules, addModule, editModule, updateModule, deleteModule } from "./reducer";
 import { useSelector, useDispatch } from "react-redux";
-import * as coursesClient from "../client";
 import * as modulesClient from "./client";
 
 export default function Modules() {
@@ -21,7 +20,7 @@ export default function Modules() {
   const canEdit = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
 
   const fetchModules = async () => {
-    const modules = await coursesClient.findModulesForCourse(cid as string);
+    const modules = await modulesClient.findModulesForCourse(cid as string);
     dispatch(setModules(modules));
   };
 
