@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Row, Col, Card, Button, Form, Alert } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setCurrentUser } from "./Account/reducer";
-import { addCourse, deleteCourse, updateCourse } from "./Courses/reducer";
+import { addCourse, deleteCourse, updateCourse, setCourses } from "./Courses/reducer";
 import { addEnrollment, enrollUserInCourse, unenrollUserFromCourse } from "./Account/enrollmentsReducer";
+import { fetchAllCourses } from "./Courses/client";
+import * as userClient from "./Account/client";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function Dashboard() {
@@ -26,9 +28,22 @@ export default function Dashboard() {
     credits: 3,
     image: ""
   });
-  
-  // State to toggle between enrolled courses and all courses
-  const [showAllCourses, setShowAllCourses] = useState(false);
+
+  // Fetch all available courses on component mount
+  useEffect(() => {
+    const loadAllCourses = async () => {
+      try {
+        const allCourses = await fetchAllCourses();
+        dispatch(setCourses(allCourses));
+      } catch (error) {
+        console.error("Failed to fetch courses:", error);
+      }
+    };
+    
+    if (currentUser) {
+      loadAllCourses();
+    }
+  }, [currentUser, dispatch]);
 
   // Check if current user has edit permissions (FACULTY or ADMIN)
   const canEdit = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
@@ -38,68 +53,53 @@ export default function Dashboard() {
     navigate("/Kambaz/Account/Signin");
   };
 
-  // Enhanced add new course function that also creates enrollment
-  const handleAddNewCourse = () => {
+  // Enhanced add new course function that posts to server
+  const handleAddNewCourse = async () => {
     // Validate required fields
     if (!course.name || !course.number) {
       alert("Please fill in at least Course Name and Course Number");
       return;
     }
     
-    console.log("Adding course:", course);
-    
-    // Store the current course data
-    const courseData = { ...course };
-    
-    // Dispatch add course action
-    dispatch(addCourse(courseData));
-    
-    // Wait a moment for the state to update, then create enrollment
-    setTimeout(() => {
-      // The course should now be in the Redux state
-      // We need to find it by the most recent timestamp since we're using Date.now()
-      const sortedCourses = [...courses].sort((a, b) => parseInt(b._id) - parseInt(a._id));
-      const newCourse = sortedCourses.find(c => 
-        c.name === courseData.name && 
-        c.number === courseData.number &&
-        c.description === courseData.description
-      );
+    try {
+      console.log("Adding course:", course);
       
-      if (newCourse) {
-        console.log("Found new course in Redux state:", newCourse);
-        
-        // Create enrollment record for current user
-        const newEnrollment = {
-          _id: `enrollment_${Date.now()}`,
-          user: currentUser._id,
-          course: newCourse._id
-        };
-        
-        dispatch(addEnrollment(newEnrollment));
-        console.log("Created enrollment:", newEnrollment);
-        
-        // // Trigger re-render by updating the enrollment trigger
-        // setEnrollmentTrigger(prev => prev + 1);
-        
-        alert("Course added and enrolled successfully!");
-        
-        // Reset the course form
-        setCourse({
-          _id: "1234",
-          name: "New Course",
-          number: "New Number",
-          startDate: "2023-09-10",
-          endDate: "2023-12-15",
-          description: "New Description",
-          department: "",
-          credits: 3,
-          image: ""
-        });
-      } else {
-        console.error("Could not find the newly added course");
-        alert("Course was added but enrollment failed. Please try again.");
-      }
-    }, 200);
+      // Post to server and get the new course with server-generated ID
+      const newCourse = await userClient.createCourse(course);
+      console.log("Course created on server:", newCourse);
+      
+      // Update Redux store with the new course
+      dispatch(addCourse(newCourse));
+      
+      // Create enrollment record for current user
+      const newEnrollment = {
+        _id: `enrollment_${Date.now()}`,
+        user: currentUser._id,
+        course: newCourse._id
+      };
+      
+      dispatch(addEnrollment(newEnrollment));
+      console.log("Created enrollment:", newEnrollment);
+      
+      alert("Course added and enrolled successfully!");
+      
+      // Reset the course form
+      setCourse({
+        _id: "1234",
+        name: "New Course",
+        number: "New Number",
+        startDate: "2023-09-10",
+        endDate: "2023-12-15",
+        description: "New Description",
+        department: "",
+        credits: 3,
+        image: ""
+      });
+      
+    } catch (error) {
+      console.error("Error creating course:", error);
+      alert("Failed to create course. Please try again.");
+    }
   };
 
   const handleUpdateCourse = () => {
@@ -126,17 +126,6 @@ export default function Dashboard() {
     );
   };
 
-  // Calculate enrolled courses (enrollmentTrigger forces re-calculation when enrollments change)
-  const enrolledCourses = courses.filter((course: any) =>
-    enrollments.some(
-      (enrollment: any) =>
-        enrollment.user === currentUser._id &&
-        enrollment.course === course._id
-     ));
-
-  // Determine which courses to display
-  const coursesToDisplay = showAllCourses ? courses : enrolledCourses;
-
   return (
     <div id="wd-dashboard" className="p-4">
       {/* User info bar */}
@@ -148,25 +137,20 @@ export default function Dashboard() {
           </small>
         </div>
         <div className="d-flex gap-2">
-          <Button 
-            variant="primary" 
-            onClick={() => setShowAllCourses(!showAllCourses)}
-          >
-            {showAllCourses ? "My Courses" : "All Courses"}
-          </Button>
+          <Link to="/Kambaz/MyCourses">
+            <Button variant="outline-primary">My Courses</Button>
+          </Link>
           <Button variant="outline-danger" onClick={signout}>
             Sign out
           </Button>
         </div>
       </div>
 
-      <h1 id="wd-dashboard-title">Dashboard</h1>
+      <h1 id="wd-dashboard-title">Course Catalog</h1>
       <hr />
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 id="wd-dashboard-published">
-          {showAllCourses 
-            ? `All Courses (${courses.length})` 
-            : `Enrolled Courses (${enrolledCourses.length})`}
+          Available Courses ({courses.length})
         </h2>
         {canEdit && (
           <div>
@@ -270,20 +254,18 @@ export default function Dashboard() {
       <hr />
 
       <div id="wd-dashboard-courses">
-        {coursesToDisplay.length === 0 ? (
+        {courses.length === 0 ? (
           <Alert variant="info">
-            {showAllCourses 
-              ? "No courses available." 
-              : "You are not currently enrolled in any courses."}
+            No courses are currently available for enrollment.
           </Alert>
         ) : (
           <Row xs={1} md={2} lg={3} xl={4} className="g-4">
-            {coursesToDisplay.map((course: any) => {
+            {courses.map((course: any) => {
               const isEnrolled = isUserEnrolled(course._id);
               return (
                 <Col key={course._id} className="wd-dashboard-course">
                   <Card style={{ width: "300px" }}>
-                    {/* Only link to course if user is enrolled */}
+                    {/* Only allow image click if enrolled */}
                     {isEnrolled ? (
                       <Link
                         to={`/Kambaz/Courses/${course._id}/Home`}
@@ -316,9 +298,12 @@ export default function Dashboard() {
                       <Card.Title className="wd-dashboard-course-title text-nowrap overflow-hidden">
                         {course.name}
                       </Card.Title>
+                      <Card.Text className="text-muted small">
+                        {course.number} • {course.department}
+                      </Card.Text>
                       <Card.Text
                         className="wd-dashboard-course-description overflow-hidden"
-                        style={{ height: "100px" }}
+                        style={{ height: "80px" }}
                       >
                         {course.description}
                       </Card.Text>
@@ -330,10 +315,10 @@ export default function Dashboard() {
                                 to={`/Kambaz/Courses/${course._id}/Home`}
                                 className="text-decoration-none"
                               >
-                                <Button variant="primary" className="me-2">Go</Button>
+                                <Button variant="primary" className="me-2">Enter Course</Button>
                               </Link>
                               <Button 
-                                variant="danger" 
+                                variant="outline-danger" 
                                 size="sm"
                                 onClick={() => handleUnenroll(course._id)}
                               >

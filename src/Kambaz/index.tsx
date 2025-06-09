@@ -2,12 +2,40 @@ import KambazNavigation from "./Navigation";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./Dashboard";
 import Courses from "./Courses";
+import MyCourses from "./MyCourses";
 import Account from "./Account";
 import ProtectedRoute from "./Account/ProtectedRoute";
+import Session from "./Account/Session";
 import "./styles.css";
+import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
+import * as userClient from "./Account/client";
 
 export default function Kambaz() {
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [course, setCourse] = useState<any>({});
+  
+  const addNewCourse = async () => {
+    const newCourse = await userClient.createCourse(course);
+    setCourses([ ...courses, newCourse ]);
+  };
+  
+  const findAllCourses = async () => {
+    try {
+      const allCourses = await userClient.findAllCourses();
+      setCourses(allCourses);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+  };
+  
+  useEffect(() => {
+    findAllCourses();
+  }, []);
+  
   return (
+    <Session>
     <div id="wd-kambaz">
       <KambazNavigation />
       <div className="wd-main-content-offset p-3">
@@ -17,6 +45,11 @@ export default function Kambaz() {
           <Route path="Dashboard" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="MyCourses" element={
+            <ProtectedRoute>
+              <MyCourses />
             </ProtectedRoute>
           } />
           <Route path="Courses/:cid/*" element={
@@ -29,5 +62,6 @@ export default function Kambaz() {
         </Routes>
       </div>
     </div>
+    </Session>
   );
 }

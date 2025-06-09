@@ -11,21 +11,11 @@ export default function KambazNavigation() {
   const links = [
     { label: "Account", path: "/Kambaz/Account", icon: FaRegCircleUser },
     { label: "Dashboard", path: "/Kambaz/Dashboard", icon: AiOutlineDashboard },
-    { label: "Courses", path: "/Kambaz/Dashboard", icon: LiaBookSolid },
+    { label: "Courses", path: "/Kambaz/MyCourses", icon: LiaBookSolid },
     { label: "Calendar", path: "/Kambaz/Calendar", icon: IoCalendarOutline },
     { label: "Inbox", path: "/Kambaz/Inbox", icon: FaInbox },
     { label: "Labs", path: "/Labs", icon: LiaCogSolid },
   ];
-
-  const isActive = (path: string, label: string) => {
-    if (label === "Dashboard") {
-      return pathname === "/Kambaz/Dashboard" && document.referrer.includes("Courses");
-    }
-    if (label === "Courses") {
-      return pathname === "/Kambaz/Dashboard" && !document.referrer.includes("Courses");
-    }
-    return pathname === path;
-  };
 
   return (
     <ListGroup id="wd-kambaz-navigation"
@@ -46,7 +36,7 @@ export default function KambazNavigation() {
           key={index}
           as={Link}
           to={link.path}
-          className={`text-center border-0 bg-black text-white sidebar-item ${isActive(link.path, link.label) ? 'active' : ''}`}
+          className={`text-center border-0 bg-black text-white sidebar-item ${pathname === link.path ? 'active' : ''}`}
         >
           <link.icon className="fs-2 text-danger mb-1" />
           <div className="sidebar-label">{link.label}</div>
