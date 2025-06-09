@@ -12,7 +12,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Alert, Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { unenrollUserFromCourse } from "../Account/enrollmentsReducer";
-import * as userClient from "../Account/client";
+import * as enrollmentsClient from "../Enrollments/client";
 
 // import { courses } from "../Database";
 export default function Courses() {
@@ -38,7 +38,7 @@ export default function Courses() {
     if (cid) {
       try {
         // Call server API to unenroll
-        await userClient.unenrollFromCourse(currentUser._id, cid);
+        await enrollmentsClient.unenrollFromCourse(currentUser._id, cid);
         
         // Update Redux state
         dispatch(unenrollUserFromCourse({ userId: currentUser._id, courseId: cid }));

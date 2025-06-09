@@ -7,6 +7,8 @@ import { addCourse, deleteCourse, updateCourse, setCourses } from "./Courses/red
 import { addEnrollment, enrollUserInCourse, unenrollUserFromCourse } from "./Account/enrollmentsReducer";
 import { fetchAllCourses } from "./Courses/client";
 import * as userClient from "./Account/client";
+import * as courseClient from "./Courses/client";
+import * as enrollmentsClient from "./Enrollments/client";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function Dashboard() {
@@ -102,16 +104,46 @@ export default function Dashboard() {
     }
   };
 
-  const handleUpdateCourse = () => {
-    dispatch(updateCourse(course));
+  const handleUpdateCourse = async () => {
+    // Validate required fields
+    if (!course.name || !course.number) {
+      alert("Please fill in at least Course Name and Course Number");
+      return;
+    }
+
+    try {
+      console.log("Updating course:", course);
+      
+      // Update on server and get the updated course back
+      const updatedCourse = await courseClient.updateCourse(course);
+      console.log("Course updated on server:", updatedCourse);
+      
+      // Update Redux store with the updated course
+      dispatch(updateCourse(updatedCourse));
+      
+      alert("Course updated successfully!");
+      
+    } catch (error) {
+      console.error("Error updating course:", error);
+      alert("Failed to update course. Please try again.");
+    }
   };
 
   const handleDeleteCourse = (courseId: any) => {
     dispatch(deleteCourse(courseId));
   };
 
-  const handleEnroll = (courseId: string) => {
-    dispatch(enrollUserInCourse({ userId: currentUser._id, courseId }));
+  const handleEnroll = async (courseId: string) => {
+    try {
+      // Call server API to enroll
+      await enrollmentsClient.enrollInCourse(currentUser._id, courseId);
+      
+      // Update Redux state
+      dispatch(enrollUserInCourse({ userId: currentUser._id, courseId }));
+    } catch (error) {
+      console.error("Failed to enroll in course:", error);
+      alert("Failed to enroll in course. Please try again.");
+    }
   };
 
   const handleUnenroll = async (courseId: string) => {

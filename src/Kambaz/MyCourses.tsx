@@ -5,7 +5,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { setCurrentUser } from "./Account/reducer";
 import { unenrollUserFromCourse } from "./Account/enrollmentsReducer";
 import { setCourses } from "./Courses/reducer";
-import { findMyCourses, unenrollFromCourse } from "./Account/client";
+import { findMyCourses } from "./Account/client";
+import * as enrollmentsClient from "./Enrollments/client";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function MyCourses() {
@@ -44,7 +45,7 @@ export default function MyCourses() {
   const handleUnenroll = async (courseId: string) => {
     try {
       // Call server API to unenroll
-      await unenrollFromCourse(currentUser._id, courseId);
+      await enrollmentsClient.unenrollFromCourse(currentUser._id, courseId);
       
       // Update Redux state
       dispatch(unenrollUserFromCourse({ userId: currentUser._id, courseId }));

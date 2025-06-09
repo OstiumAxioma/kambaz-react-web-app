@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ListGroup, FormControl } from "react-bootstrap";
 import { BsGripVertical } from "react-icons/bs";
 import ModulesControls from "./ModulesControls";
 import LessonControlButtons from "./LessonControlButtons";
 import ModuleControlButtons from "./ModuleControlButtons";
 import { useParams } from "react-router-dom";
-import { addModule, editModule, updateModule, deleteModule } from "./reducer";
+import { setModules, addModule, editModule, updateModule, deleteModule } from "./reducer";
 import { useSelector, useDispatch } from "react-redux";
+import * as coursesClient from "../client";
+import * as modulesClient from "./client";
 
 export default function Modules() {
   const { cid } = useParams();
@@ -17,6 +19,25 @@ export default function Modules() {
 
   // Check if current user has edit permissions (FACULTY or ADMIN)
   const canEdit = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
+
+  const fetchModules = async () => {
+    const modules = await coursesClient.findModulesForCourse(cid as string);
+    dispatch(setModules(modules));
+  };
+
+  const saveModule = async (module: any) => {
+    await modulesClient.updateModule(module);
+    dispatch(updateModule(module));
+  };
+
+  const removeModule = async (moduleId: string) => {
+    await modulesClient.deleteModule(moduleId);
+    dispatch(deleteModule(moduleId));
+  };
+
+  useEffect(() => {
+    fetchModules();
+  }, []);
 
   return (
     <div className="container-fluid">
@@ -37,9 +58,7 @@ export default function Modules() {
       <div className="row mt-4">
         <div className="col-12">
           <ListGroup className="rounded-0" id="wd-modules">
-            {modules
-              .filter((module: any) => module.course === cid)
-              .map((module: any) => (
+            {modules.map((module: any) => (
               <ListGroup.Item key={module._id} className="wd-module p-0 mb-5 fs-5 border-gray">
                 <div className="wd-title p-3 ps-2 bg-secondary d-flex align-items-center justify-content-between">
                   <div className="d-flex align-items-center">
@@ -48,6 +67,7 @@ export default function Modules() {
                     {module.editing && canEdit && (
                       <FormControl
                         className="w-50 d-inline-block"
+                        value={module.name}
                         onChange={(e) =>
                           dispatch(
                             updateModule({ ...module, name: e.target.value })
@@ -55,19 +75,16 @@ export default function Modules() {
                         }
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
-                            dispatch(updateModule({ ...module, editing: false }));
+                            saveModule({ ...module, editing: false });
                           }
                         }}
-                        defaultValue={module.name}
                       />
                     )}
                   </div>
                   {canEdit && (
                     <ModuleControlButtons 
                       moduleId={module._id} 
-                      deleteModule={(moduleId) => {
-                        dispatch(deleteModule(moduleId));
-                      }}
+                      deleteModule={(moduleId) => removeModule(moduleId)}
                       editModule={(moduleId) => dispatch(editModule(moduleId))}
                     />
                   )}

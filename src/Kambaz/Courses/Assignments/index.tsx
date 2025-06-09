@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaSearch, FaPlus, FaCheckCircle, FaTrash, FaEdit } from "react-icons/fa";
 import { MdMenuBook } from "react-icons/md";
 import { ListGroup, Button, Modal } from "react-bootstrap";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { deleteAssignment } from "./reducer";
+import { setAssignments, deleteAssignment } from "./reducer";
+import * as assignmentsClient from "./client";
 
 interface Assignment {
   _id: string;
@@ -30,6 +31,19 @@ export default function Assignments() {
   // Check if current user has edit permissions (FACULTY or ADMIN)
   const canEdit = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
 
+  const fetchAssignments = async () => {
+    try {
+      const assignments = await assignmentsClient.findAssignmentsForCourse(cid as string);
+      dispatch(setAssignments(assignments));
+    } catch (error) {
+      console.error("Failed to fetch assignments:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [cid]);
+
   const handleAddAssignment = () => {
     navigate(`/Kambaz/Courses/${cid}/Assignments/new/edit`);
   };
@@ -39,11 +53,17 @@ export default function Assignments() {
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (assignmentToDelete) {
-      dispatch(deleteAssignment(assignmentToDelete._id));
-      setShowDeleteModal(false);
-      setAssignmentToDelete(null);
+      try {
+        await assignmentsClient.deleteAssignment(assignmentToDelete._id);
+        dispatch(deleteAssignment(assignmentToDelete._id));
+        setShowDeleteModal(false);
+        setAssignmentToDelete(null);
+      } catch (error) {
+        console.error("Failed to delete assignment:", error);
+        alert("Failed to delete assignment. Please try again.");
+      }
     }
   };
 

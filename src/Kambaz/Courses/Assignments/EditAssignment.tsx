@@ -4,6 +4,7 @@ import { Form, Button, Card, Badge, CloseButton, Alert } from "react-bootstrap";
 import { Link, useParams, Navigate, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { addAssignment, updateAssignment } from "./reducer";
+import * as assignmentsClient from "./client";
 
 interface Assignment {
   _id: string;
@@ -92,44 +93,53 @@ export default function EditAssignment() {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.title.trim()) {
       setSaveMessage("Please enter assignment title");
       return;
     }
 
-    if (isNewAssignment) {
-      // Create new assignment
-      const newAssignment = {
-        title: formData.title,
-        course: cid!,
-        description: formData.description,
-        points: formData.points,
-        dueDate: formData.dueDate,
-        availableFrom: formData.availableFrom,
-        availableUntil: formData.availableUntil
-      };
-      dispatch(addAssignment(newAssignment));
-      setSaveMessage("Assignment created successfully!");
-    } else {
-      // Update existing assignment
-      const updatedAssignment = {
-        _id: aid!,
-        title: formData.title,
-        course: cid!,
-        description: formData.description,
-        points: formData.points,
-        dueDate: formData.dueDate,
-        availableFrom: formData.availableFrom,
-        availableUntil: formData.availableUntil
-      };
-      dispatch(updateAssignment(updatedAssignment));
-      setSaveMessage("Assignment updated successfully!");
-    }
+    try {
+      if (isNewAssignment) {
+        // Create new assignment
+        const newAssignment = {
+          title: formData.title,
+          course: cid!,
+          description: formData.description,
+          points: formData.points,
+          dueDate: formData.dueDate,
+          availableFrom: formData.availableFrom,
+          availableUntil: formData.availableUntil
+        };
+        
+        const createdAssignment = await assignmentsClient.createAssignment(cid!, newAssignment);
+        dispatch(addAssignment(createdAssignment));
+        setSaveMessage("Assignment created successfully!");
+      } else {
+        // Update existing assignment
+        const updatedAssignment = {
+          _id: aid!,
+          title: formData.title,
+          course: cid!,
+          description: formData.description,
+          points: formData.points,
+          dueDate: formData.dueDate,
+          availableFrom: formData.availableFrom,
+          availableUntil: formData.availableUntil
+        };
+        
+        const serverUpdatedAssignment = await assignmentsClient.updateAssignment(updatedAssignment);
+        dispatch(updateAssignment(serverUpdatedAssignment));
+        setSaveMessage("Assignment updated successfully!");
+      }
 
-    setTimeout(() => {
-      navigate(`/Kambaz/Courses/${cid}/Assignments`);
-    }, 1500);
+      setTimeout(() => {
+        navigate(`/Kambaz/Courses/${cid}/Assignments`);
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to save assignment:", error);
+      setSaveMessage("Failed to save assignment. Please try again.");
+    }
   };
 
   // Redirect if no edit permissions
