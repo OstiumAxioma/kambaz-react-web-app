@@ -114,8 +114,17 @@ export default function Dashboard() {
     dispatch(enrollUserInCourse({ userId: currentUser._id, courseId }));
   };
 
-  const handleUnenroll = (courseId: string) => {
-    dispatch(unenrollUserFromCourse({ userId: currentUser._id, courseId }));
+  const handleUnenroll = async (courseId: string) => {
+    try {
+      // Call server API to unenroll
+      await userClient.unenrollFromCourse(currentUser._id, courseId);
+      
+      // Update Redux state
+      dispatch(unenrollUserFromCourse({ userId: currentUser._id, courseId }));
+    } catch (error) {
+      console.error("Failed to unenroll from course:", error);
+      alert("Failed to unenroll from course. Please try again.");
+    }
   };
 
   const isUserEnrolled = (courseId: string) => {

@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setCurrentUser } from "./Account/reducer";
 import { unenrollUserFromCourse } from "./Account/enrollmentsReducer";
 import { setCourses } from "./Courses/reducer";
-import { findMyCourses } from "./Account/client";
+import { findMyCourses, unenrollFromCourse } from "./Account/client";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function MyCourses() {
@@ -41,8 +41,20 @@ export default function MyCourses() {
     navigate("/Kambaz/Account/Signin");
   };
 
-  const handleUnenroll = (courseId: string) => {
-    dispatch(unenrollUserFromCourse({ userId: currentUser._id, courseId }));
+  const handleUnenroll = async (courseId: string) => {
+    try {
+      // Call server API to unenroll
+      await unenrollFromCourse(currentUser._id, courseId);
+      
+      // Update Redux state
+      dispatch(unenrollUserFromCourse({ userId: currentUser._id, courseId }));
+      
+      // Update local state to immediately reflect the change
+      setMyCourses(myCourses.filter(course => course._id !== courseId));
+    } catch (error) {
+      console.error("Failed to unenroll from course:", error);
+      alert("Failed to unenroll from course. Please try again.");
+    }
   };
 
   const isUserEnrolled = (courseId: string) => {
