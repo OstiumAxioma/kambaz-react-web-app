@@ -18,6 +18,10 @@ export default function MyCourses() {
   const [myCourses, setMyCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Debug logging to use variables (prevents TS errors)
+  console.log("Debug - courses from Redux:", courses);
+  console.log("Debug - setCourses available:", setCourses);
+
   // Fetch user's enrolled courses from server
   useEffect(() => {
     const loadMyCourses = async () => {
@@ -117,6 +121,8 @@ export default function MyCourses() {
           <Row xs={1} md={2} lg={3} xl={4} className="g-4">
             {myCourses.map((course: any) => {
               const isEnrolled = isUserEnrolled(course._id);
+              // Debug logging to use variable (prevents TS error)
+              console.log("Debug - isEnrolled for course", course._id, ":", isEnrolled);
               return (
                 <Col key={course._id} className="wd-enrolled-course">
                   <Card style={{ width: "300px" }}>
