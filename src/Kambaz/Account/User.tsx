@@ -13,6 +13,10 @@ export default function Users() {
  const [error, setError] = useState("");
  const [success, setSuccess] = useState("");
 
+ useEffect(() => {
+   console.log("Current search name:", name);
+ }, [name]);
+
  const createUser = async () => {
     try {
         setLoading(true);
@@ -42,6 +46,7 @@ export default function Users() {
 
  const filterUsersByName = async (name: string) => {
    setName(name);
+   console.log("Filtering users by name:", name);
    if (name) {
      const users = await client.findUsersByPartialName(name);
      setUsers(users);
