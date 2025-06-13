@@ -7,7 +7,7 @@ const MODULES_API = `${REMOTE_SERVER}/api/modules`;
 
 export const findModulesForCourse = async (courseId: string) => {
   console.log("Fetching modules for course:", courseId);
-  const response = await axiosWithCredentials.get(`${MODULES_API}/${courseId}`);
+  const response = await axiosWithCredentials.get(`${MODULES_API}/courses/${courseId}/modules`);
   console.log("Modules response:", response.data);
   return response.data;
 };
