@@ -2,12 +2,44 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router";
 import PeopleTable from "../Courses/People/Table";
 import * as client from "./client";
-import { FormControl } from "react-bootstrap";
+import { FormControl, Alert } from "react-bootstrap";
+import { FaPlus } from "react-icons/fa";
 
 export default function Users() {
  const [users, setUsers] = useState<any[]>([]);
  const [role, setRole] = useState("");
  const [name, setName] = useState("");
+ const [loading, setLoading] = useState(false);
+ const [error, setError] = useState("");
+ const [success, setSuccess] = useState("");
+
+ const createUser = async () => {
+    try {
+        setLoading(true);
+        setError("");
+        setSuccess("");
+        
+        const newUser = {
+            firstName: "New",
+            lastName: `User${users.length + 1}`,
+            username: `newuser${Date.now()}`,
+            password: "password123",
+            email: `email${users.length + 1}@neu.edu`,
+            section: "S101",
+            role: "STUDENT",
+        };
+
+        const user = await client.createUser(newUser);
+        setUsers([...users, user]);
+        setSuccess("User created successfully!");
+    } catch (err) {
+        console.error("Error creating user:", err);
+        setError("Failed to create user. Please try again.");
+    } finally {
+        setLoading(false);
+    }
+ };
+
  const filterUsersByName = async (name: string) => {
    setName(name);
    if (name) {
@@ -53,23 +85,33 @@ export default function Users() {
    fetchUsers();
  }, [uid]);
 
- return (
-   <div>
-     <h3>Users</h3>
-     <FormControl onChange={(e) => filterUsersByName(e.target.value)} placeholder="Search people"
-             className="float-start w-25 me-2 wd-filter-by-name" />
-     <select 
-       value={role} 
-       onChange={(e) => filterUsersByRole(e.target.value)}
-       className="form-select float-start w-25 wd-select-role"
-     >
-       <option value="">All Roles</option>
-       <option value="STUDENT">Students</option>
-       <option value="TA">Assistants</option>
-       <option value="FACULTY">Faculty</option>
-       <option value="ADMIN">Administrators</option>
-     </select>
-     <PeopleTable users={users} />
-   </div>
+return (
+    <div>
+        {error && <Alert variant="danger" onClose={() => setError("")} dismissible>{error}</Alert>}
+        {success && <Alert variant="success" onClose={() => setSuccess("")} dismissible>{success}</Alert>}
+        <button 
+            onClick={createUser} 
+            className="float-end btn btn-danger wd-add-people"
+            disabled={loading}
+        >
+            <FaPlus className="me-2" />
+            {loading ? "Creating..." : "Add User"}
+        </button>
+        <h3>Users</h3>
+        <FormControl onChange={(e) => filterUsersByName(e.target.value)} placeholder="Search people"
+                className="float-start w-25 me-2 wd-filter-by-name" />
+        <select 
+        value={role} 
+        onChange={(e) => filterUsersByRole(e.target.value)}
+        className="form-select float-start w-25 wd-select-role"
+        >
+        <option value="">All Roles</option>
+        <option value="STUDENT">Students</option>
+        <option value="TA">Assistants</option>
+        <option value="FACULTY">Faculty</option>
+        <option value="ADMIN">Administrators</option>
+        </select>
+        <PeopleTable users={users} />
+    </div>
  );
 }
