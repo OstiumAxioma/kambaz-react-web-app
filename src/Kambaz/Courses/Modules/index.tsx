@@ -31,6 +31,7 @@ export default function Modules() {
   const [lessonName, setLessonName] = useState("");
   const [showLessonEditor, setShowLessonEditor] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const { modules } = useSelector((state: any) => state.modulesReducer);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const dispatch = useDispatch();
@@ -80,11 +81,26 @@ export default function Modules() {
   }; 
 
   const fetchModulesForCourse = async () => {
-    const modules = await courseClient.findModulesForCourse(cid!);
-    dispatch(setModules(modules));
+    try {
+      console.log("Fetching modules for course:", cid);
+      const modules = await courseClient.findModulesForCourse(cid!);
+      console.log("Fetched modules:", modules);
+      dispatch(setModules(modules));
+      setError(null);
+    } catch (error: any) {
+      console.error("Error fetching modules:", error);
+      setError(error.response?.data?.message || "Failed to fetch modules");
+      // 如果是认证错误，可能需要重定向到登录页面
+      if (error.response?.status === 401) {
+        window.location.href = "/login";
+      }
+    }
   };
+
   useEffect(() => {
-    fetchModulesForCourse();
+    if (cid) {
+      fetchModulesForCourse();
+    }
   }, [cid]);
 
   const fetchModules = async () => {
@@ -156,6 +172,11 @@ export default function Modules() {
 
   return (
     <div className="container-fluid">
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
       <div className="row">
         <div className="col-12">
           {canEdit && (
