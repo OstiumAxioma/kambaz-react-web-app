@@ -3,11 +3,12 @@ import axios from "axios";
 const axiosWithCredentials = axios.create({ withCredentials: true });
 // Remove trailing slash to prevent double slashes in URLs
 const REMOTE_SERVER = (import.meta.env.VITE_REMOTE_SERVER || "http://localhost:4000").replace(/\/$/, '');
-const COURSES_API = `${REMOTE_SERVER}/api/courses`;
 const MODULES_API = `${REMOTE_SERVER}/api/modules`;
 
 export const findModulesForCourse = async (courseId: string) => {
-  const response = await axiosWithCredentials.get(`${COURSES_API}/${courseId}/modules`);
+  console.log("Fetching modules for course:", courseId);
+  const response = await axiosWithCredentials.get(`${MODULES_API}/${courseId}/modules`);
+  console.log("Modules response:", response.data);
   return response.data;
 };
 
@@ -17,6 +18,13 @@ export const updateModule = async (module: any) => {
 };
 
 export const deleteModule = async (moduleId: string) => {
-  const response = await axiosWithCredentials.delete(`${MODULES_API}/${moduleId}`);
-  return response.data;
+  console.log("Deleting module:", moduleId);
+  try {
+    const response = await axiosWithCredentials.delete(`${MODULES_API}/${moduleId}`);
+    console.log("Delete response:", response);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting module:", error);
+    throw error;
+  }
 }; 

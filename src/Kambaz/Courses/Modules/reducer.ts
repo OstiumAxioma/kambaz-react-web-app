@@ -1,6 +1,23 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = {
+interface Module {
+  _id: string;
+  name: string;
+  course: string;
+  description?: string;
+  lessons?: Array<{
+    _id: string;
+    name: string;
+    description?: string;
+    module: string;
+  }>;
+}
+
+interface ModulesState {
+  modules: Module[];
+}
+
+const initialState: ModulesState = {
   modules: [],
 };
 
@@ -12,26 +29,20 @@ const modulesSlice = createSlice({
       state.modules = modules;
     }, 
     addModule: (state, { payload: module }) => {
-      const newModule: any = {
-        _id: new Date().getTime().toString(),
-        name: module.name,
-        course: module.course,
-        lessons: [],
-      };
-      state.modules = [...state.modules, newModule] as any;
+      state.modules = [...state.modules, module];
     },
     deleteModule: (state, { payload: moduleId }) => {
-      state.modules = state.modules.filter((m: any) => m._id !== moduleId);
+      state.modules = state.modules.filter((m) => m._id !== moduleId);
     },
     updateModule: (state, { payload: module }) => {
-      state.modules = state.modules.map((m: any) =>
+      state.modules = state.modules.map((m) =>
         m._id === module._id ? module : m
-      ) as any;
+      );
     },
     editModule: (state, { payload: moduleId }) => {
-      state.modules = state.modules.map((m: any) =>
+      state.modules = state.modules.map((m) =>
         m._id === moduleId ? { ...m, editing: true } : m
-      ) as any;
+      );
     },
   },
 });
