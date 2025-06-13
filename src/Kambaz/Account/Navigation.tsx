@@ -4,7 +4,9 @@ import { useSelector } from "react-redux";
 export default function AccountNavigation() {
   const location = useLocation();
   const { currentUser } = useSelector((state: any) => state.accountReducer);
+  const { pathname } = useLocation();
   const links = currentUser ? ["Profile"] : ["Signin", "Signup"];
+  const active = (path: string) => (pathname.includes(path) ? "active" : "");
   
   // Debug info
   console.log("AccountNavigation - currentUser:", currentUser);
@@ -35,6 +37,8 @@ export default function AccountNavigation() {
           <span className="flex-grow-1">{item.label}</span>
         </Link>
       ))}
+      {currentUser && currentUser.role === "ADMIN" && (
+       <Link to={`/Kambaz/Account/Users`} className={`list-group-item ${active("Users")}`}> Users </Link> )}
     </div>
   );
 }
