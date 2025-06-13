@@ -6,7 +6,7 @@ import Assignments from "./Assignments";
 import AssignmentEditor from "./Assignments/editor";
 import EditAssignment from "./Assignments/EditAssignment";
 import { FaAlignJustify } from "react-icons/fa";
-import PeopleTable from "./People/Table";
+import People from "./People";
 import Breadcrumb from "./Breadcrumb";
 import { useSelector, useDispatch } from "react-redux";
 import { Alert, Button } from "react-bootstrap";
@@ -123,7 +123,7 @@ export default function Courses() {
             <Route path="Assignments/:aid" element={<AssignmentEditor />} />
             <Route path="Assignments/:aid/edit" element={<EditAssignment />} />
             <Route path="Assignments/new/edit" element={<EditAssignment />} />
-            <Route path="People" element={<PeopleTable />} />
+            <Route path="People" element={<People />} />
           </Routes>
         </div>
       </div>

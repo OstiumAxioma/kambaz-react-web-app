@@ -8,6 +8,7 @@ import { useParams } from "react-router-dom";
 import { setModules, addModule, editModule, updateModule, deleteModule } from "./reducer";
 import { useSelector, useDispatch } from "react-redux";
 import * as modulesClient from "./client";
+import * as courseClient from "../client";
 
 export default function Modules() {
   const { cid } = useParams();
@@ -16,23 +17,40 @@ export default function Modules() {
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const dispatch = useDispatch();
 
+  const addModuleHandler = async () => {
+    const newModule = await courseClient.createModuleForCourse(cid!, {
+      name: moduleName,
+      course: cid,
+    });
+    dispatch(addModule(newModule));
+    setModuleName("");
+  }; 
+
+  const deleteModuleHandler = async (moduleId: string) => {
+    await modulesClient.deleteModule(moduleId);
+    dispatch(deleteModule(moduleId));
+  }; 
+
   // Check if current user has edit permissions (FACULTY or ADMIN)
   const canEdit = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
+
+  const fetchModulesForCourse = async () => {
+    const modules = await courseClient.findModulesForCourse(cid!);
+    dispatch(setModules(modules));
+  };
+  useEffect(() => {
+    fetchModulesForCourse();
+  }, [cid]);
 
   const fetchModules = async () => {
     const modules = await modulesClient.findModulesForCourse(cid as string);
     dispatch(setModules(modules));
   };
 
-  const saveModule = async (module: any) => {
+  const updateModuleHandler = async (module: any) => {
     await modulesClient.updateModule(module);
     dispatch(updateModule(module));
-  };
-
-  const removeModule = async (moduleId: string) => {
-    await modulesClient.deleteModule(moduleId);
-    dispatch(deleteModule(moduleId));
-  };
+  }; 
 
   useEffect(() => {
     fetchModules();
@@ -46,10 +64,7 @@ export default function Modules() {
             <ModulesControls
               moduleName={moduleName}
               setModuleName={setModuleName}
-              addModule={() => {
-                dispatch(addModule({ name: moduleName, course: cid }));
-                setModuleName("");
-              }}
+              addModule={addModuleHandler}
             />
           )}
         </div>
@@ -68,13 +83,11 @@ export default function Modules() {
                         className="w-50 d-inline-block"
                         value={module.name}
                         onChange={(e) =>
-                          dispatch(
-                            updateModule({ ...module, name: e.target.value })
-                          )
+                          updateModuleHandler({ ...module, name: e.target.value })
                         }
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
-                            saveModule({ ...module, editing: false });
+                            updateModuleHandler({ ...module, editing: false });
                           }
                         }}
                       />
@@ -83,7 +96,7 @@ export default function Modules() {
                   {canEdit && (
                     <ModuleControlButtons 
                       moduleId={module._id} 
-                      deleteModule={(moduleId) => removeModule(moduleId)}
+                      deleteModule={deleteModuleHandler}
                       editModule={(moduleId) => dispatch(editModule(moduleId))}
                     />
                   )}

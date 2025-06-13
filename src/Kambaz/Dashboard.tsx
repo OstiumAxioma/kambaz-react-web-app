@@ -11,26 +11,34 @@ import * as courseClient from "./Courses/client";
 import * as enrollmentsClient from "./Enrollments/client";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-export default function Dashboard() {
+interface DashboardProps {
+  courses: any[];
+  course: any;
+  setCourse: (course: any) => void;
+  addNewCourse: () => Promise<void>;
+  deleteCourse: (courseId: string) => Promise<void>;
+  updateCourse: () => Promise<void>;
+  enrolling: boolean;
+  setEnrolling: (enrolling: boolean) => void;
+  updateEnrollment: (courseId: string, enrolled: boolean) => Promise<void>;
+}
+
+export default function Dashboard({ 
+  courses, 
+  course, 
+  setCourse,
+  addNewCourse,
+  deleteCourse,
+  updateCourse,
+  enrolling,
+  setEnrolling,
+  updateEnrollment
+}: DashboardProps) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { currentUser } = useSelector((state: any) => state.accountReducer);
-  const { courses } = useSelector((state: any) => state.coursesReducer);
   const { enrollments } = useSelector((state: any) => state.enrollmentsReducer);
   
-  // Local state for the course form
-  const [course, setCourse] = useState({
-    _id: "1234",
-    name: "New Course",
-    number: "New Number",
-    startDate: "2023-09-10",
-    endDate: "2023-12-15",
-    description: "New Description",
-    department: "",
-    credits: 3,
-    image: ""
-  });
-
   // Fetch all available courses on component mount
   useEffect(() => {
     const loadAllCourses = async () => {
@@ -105,57 +113,28 @@ export default function Dashboard() {
   };
 
   const handleUpdateCourse = async () => {
-    // Validate required fields
     if (!course.name || !course.number) {
       alert("Please fill in at least Course Name and Course Number");
       return;
     }
 
     try {
-      console.log("Updating course:", course);
-      
-      // Update on server and get the updated course back
       const updatedCourse = await courseClient.updateCourse(course);
-      console.log("Course updated on server:", updatedCourse);
-      
-      // Update Redux store with the updated course
-      dispatch(updateCourse(updatedCourse));
-      
+      await updateCourse(); // Call prop function
+      dispatch({ type: "courses/updateCourse", payload: updatedCourse }); // Dispatch Redux action
       alert("Course updated successfully!");
-      
     } catch (error) {
       console.error("Error updating course:", error);
       alert("Failed to update course. Please try again.");
     }
   };
 
-  const handleDeleteCourse = (courseId: any) => {
-    dispatch(deleteCourse(courseId));
-  };
-
-  const handleEnroll = async (courseId: string) => {
+  const handleDeleteCourse = async (courseId: any) => {
     try {
-      // Call server API to enroll
-      await enrollmentsClient.enrollInCourse(currentUser._id, courseId);
-      
-      // Update Redux state
-      dispatch(enrollUserInCourse({ userId: currentUser._id, courseId }));
+      await deleteCourse(courseId); // Call prop function
+      dispatch({ type: "courses/deleteCourse", payload: courseId }); // Dispatch Redux action
     } catch (error) {
-      console.error("Failed to enroll in course:", error);
-      alert("Failed to enroll in course. Please try again.");
-    }
-  };
-
-  const handleUnenroll = async (courseId: string) => {
-    try {
-      // Call server API to unenroll
-      await userClient.unenrollFromCourse(currentUser._id, courseId);
-      
-      // Update Redux state
-      dispatch(unenrollUserFromCourse({ userId: currentUser._id, courseId }));
-    } catch (error) {
-      console.error("Failed to unenroll from course:", error);
-      alert("Failed to unenroll from course. Please try again.");
+      console.error("Error deleting course:", error);
     }
   };
 
@@ -188,10 +167,19 @@ export default function Dashboard() {
       </div>
 
       <h1 id="wd-dashboard-title">Course Catalog</h1>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <Button 
+          variant="primary" 
+          onClick={() => setEnrolling(!enrolling)}
+          className="float-end"
+        >
+          {enrolling ? "My Courses" : "All Courses"}
+        </Button>
+      </div>
       <hr />
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 id="wd-dashboard-published">
-          Available Courses ({courses.length})
+          {enrolling ? "All Courses" : "My Courses"} ({courses.length})
         </h2>
         {canEdit && (
           <div>
@@ -297,12 +285,12 @@ export default function Dashboard() {
       <div id="wd-dashboard-courses">
         {courses.length === 0 ? (
           <Alert variant="info">
-            No courses are currently available for enrollment.
+            {enrolling ? "No courses are currently available." : "You are not enrolled in any courses."}
           </Alert>
         ) : (
           <Row xs={1} md={2} lg={3} xl={4} className="g-4">
             {courses.map((course: any) => {
-              const isEnrolled = isUserEnrolled(course._id);
+              const isEnrolled = enrolling ? course.enrolled : isUserEnrolled(course._id);
               return (
                 <Col key={course._id} className="wd-dashboard-course">
                   <Card style={{ width: "300px" }}>
@@ -336,8 +324,20 @@ export default function Dashboard() {
                       />
                     )}
                     <Card.Body>
-                      <Card.Title className="wd-dashboard-course-title text-nowrap overflow-hidden">
-                        {course.name}
+                      <Card.Title className="wd-dashboard-course-title text-nowrap overflow-hidden d-flex justify-content-between align-items-center">
+                        <span>{course.name}</span>
+                        {enrolling && (
+                          <Button
+                            variant={isEnrolled ? "danger" : "success"}
+                            size="sm"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              updateEnrollment(course._id, !isEnrolled);
+                            }}
+                          >
+                            {isEnrolled ? "Unenroll" : "Enroll"}
+                          </Button>
+                        )}
                       </Card.Title>
                       <Card.Text className="text-muted small">
                         {course.number} • {course.department}
@@ -350,29 +350,13 @@ export default function Dashboard() {
                       </Card.Text>
                       <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          {isEnrolled ? (
-                            <>
-                              <Link
-                                to={`/Kambaz/Courses/${course._id}/Home`}
-                                className="text-decoration-none"
-                              >
-                                <Button variant="primary" className="me-2">Enter Course</Button>
-                              </Link>
-                              <Button 
-                                variant="outline-danger" 
-                                size="sm"
-                                onClick={() => handleUnenroll(course._id)}
-                              >
-                                Unenroll
-                              </Button>
-                            </>
-                          ) : (
-                            <Button 
-                              variant="success" 
-                              onClick={() => handleEnroll(course._id)}
+                          {!enrolling && isEnrolled && (
+                            <Link
+                              to={`/Kambaz/Courses/${course._id}/Home`}
+                              className="text-decoration-none"
                             >
-                              Enroll
-                            </Button>
+                              <Button variant="primary" className="me-2">Enter Course</Button>
+                            </Link>
                           )}
                         </div>
                         {canEdit && (
