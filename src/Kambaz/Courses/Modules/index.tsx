@@ -9,7 +9,6 @@ import { useParams } from "react-router-dom";
 import { setModules, addModule, editModule, updateModule, deleteModule } from "./reducer";
 import { useSelector, useDispatch } from "react-redux";
 import * as modulesClient from "./client";
-import * as courseClient from "../client";
 
 interface Module {
   _id: string;
@@ -55,7 +54,7 @@ export default function Modules() {
         description: "",
         lessons: []
       });
-      const newModule = await courseClient.createModuleForCourse(cid!, {
+      const newModule = await modulesClient.createModule(cid!, {
         name: moduleName,
         course: cid,
         description: "",
@@ -83,7 +82,7 @@ export default function Modules() {
   const fetchModulesForCourse = async () => {
     try {
       console.log("Fetching modules for course:", cid);
-      const modules = await courseClient.findModulesForCourse(cid!);
+      const modules = await modulesClient.findModulesForCourse(cid!);
       console.log("Fetched modules:", modules);
       dispatch(setModules(modules));
       setError(null);
@@ -103,19 +102,10 @@ export default function Modules() {
     }
   }, [cid]);
 
-  const fetchModules = async () => {
-    const modules = await modulesClient.findModulesForCourse(cid as string);
-    dispatch(setModules(modules));
-  };
-
   const updateModuleHandler = async (module: any) => {
     await modulesClient.updateModule(module);
     dispatch(updateModule(module));
   }; 
-
-  useEffect(() => {
-    fetchModules();
-  }, []);
 
   const addLessonHandler = async (moduleId: string) => {
     if (!canEdit) {

@@ -27,4 +27,16 @@ export const deleteModule = async (moduleId: string) => {
     console.error("Error deleting module:", error);
     throw error;
   }
+};
+
+export const createModule = async (courseId: string, module: any) => {
+  console.log("Creating module for course:", courseId, "with data:", module);
+  try {
+    const response = await axiosWithCredentials.post(`${MODULES_API}/courses/${courseId}/modules`, module);
+    console.log("Create module response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating module:", error);
+    throw error;
+  }
 }; 

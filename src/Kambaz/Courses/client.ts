@@ -50,8 +50,8 @@ export const createCourse = async (course: any) => {
 export const findModulesForCourse = async (courseId: string) => {
   try {
     console.log("Fetching modules for course:", courseId);
-    console.log("API URL:", `${MODULES_API}/${courseId}/modules`);
-    const response = await axiosWithCredentials.get(`${MODULES_API}/${courseId}/modules`);
+    console.log("API URL:", `${MODULES_API}/courses/${courseId}/modules`);
+    const response = await axiosWithCredentials.get(`${MODULES_API}/courses/${courseId}/modules`);
     console.log("Modules response:", response.data);
     return response.data;
   } catch (error: any) {
@@ -65,7 +65,7 @@ export const findModulesForCourse = async (courseId: string) => {
 
 export const createModuleForCourse = async (courseId: string, module: any) => {
   const response = await axiosWithCredentials.post(
-    `${MODULES_API}/${courseId}/modules`,
+    `${MODULES_API}/courses/${courseId}/modules`,
     module
   );
   return response.data;
