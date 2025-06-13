@@ -1,14 +1,13 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Row, Col, Card, Button, Form, Alert } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setCurrentUser } from "./Account/reducer";
-import { addCourse, deleteCourse, updateCourse, setCourses } from "./Courses/reducer";
-import { addEnrollment, enrollUserInCourse, unenrollUserFromCourse } from "./Account/enrollmentsReducer";
+import { addCourse, setCourses } from "./Courses/reducer";
+import { addEnrollment } from "./Account/enrollmentsReducer";
 import { fetchAllCourses } from "./Courses/client";
 import * as userClient from "./Account/client";
 import * as courseClient from "./Courses/client";
-import * as enrollmentsClient from "./Enrollments/client";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 interface DashboardProps {
@@ -27,7 +26,6 @@ export default function Dashboard({
   courses, 
   course, 
   setCourse,
-  addNewCourse,
   deleteCourse,
   updateCourse,
   enrolling,
