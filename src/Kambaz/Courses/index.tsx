@@ -11,8 +11,10 @@ import Breadcrumb from "./Breadcrumb";
 import { useSelector, useDispatch } from "react-redux";
 import { Alert, Button } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
-import { unenrollUserFromCourse } from "../Account/enrollmentsReducer";
+import { unenrollUserFromCourse, enrollUserInCourse } from "../Account/enrollmentsReducer";
 import * as enrollmentsClient from "../Enrollments/client";
+import * as userClient from "../Account/client";
+import { useState, useEffect } from "react";
 
 // import { courses } from "../Database";
 export default function Courses() {
@@ -23,13 +25,49 @@ export default function Courses() {
   const { courses } = useSelector((state: any) => state.coursesReducer);
   const { enrollments } = useSelector((state: any) => state.enrollmentsReducer);
   const course = courses.find((course: any) => course._id === cid);
+  
+  // State for enrollment status from server
+  const [serverEnrolled, setServerEnrolled] = useState<boolean>(false);
+  const [checkingEnrollment, setCheckingEnrollment] = useState<boolean>(true);
 
-  // Check if current user is enrolled in this course
-  const isEnrolled = enrollments.some(
-    (enrollment: any) =>
-      enrollment.user === currentUser._id &&
-      enrollment.course === cid
-  );
+  // Check enrollment status from server (authoritative)
+  useEffect(() => {
+    const checkEnrollmentStatus = async () => {
+      if (currentUser && cid) {
+        try {
+          setCheckingEnrollment(true);
+          const enrolledCourses = await userClient.findCoursesForUser(currentUser._id);
+          const enrolled = enrolledCourses.some((course: any) => course._id === cid);
+          setServerEnrolled(enrolled);
+          
+          // Sync with Redux store if different
+          const localEnrolled = enrollments.some(
+            (enrollment: any) =>
+              enrollment.user === currentUser._id &&
+              enrollment.course === cid
+          );
+          
+          if (enrolled && !localEnrolled) {
+            // User is enrolled on server but not in local store
+            dispatch(enrollUserInCourse({ userId: currentUser._id, courseId: cid }));
+          } else if (!enrolled && localEnrolled) {
+            // User is not enrolled on server but exists in local store
+            dispatch(unenrollUserFromCourse({ userId: currentUser._id, courseId: cid }));
+          }
+        } catch (error) {
+          console.error("Error checking enrollment status:", error);
+          setServerEnrolled(false);
+        } finally {
+          setCheckingEnrollment(false);
+        }
+      }
+    };
+
+    checkEnrollmentStatus();
+  }, [currentUser, cid, dispatch, enrollments]);
+
+  // Check if current user is enrolled in this course (use server data as authority)
+  const isEnrolled = serverEnrolled;
 
   // Check if current user has edit permissions (FACULTY or ADMIN)
   const canEdit = currentUser?.role === "FACULTY" || currentUser?.role === "ADMIN";
@@ -43,6 +81,9 @@ export default function Courses() {
         // Update Redux state
         dispatch(unenrollUserFromCourse({ userId: currentUser._id, courseId: cid }));
         
+        // Update local state
+        setServerEnrolled(false);
+        
         // Navigate back to dashboard
         navigate("/Kambaz/Dashboard");
       } catch (error) {
@@ -51,6 +92,18 @@ export default function Courses() {
       }
     }
   };
+
+  // Show loading state while checking enrollment
+  if (checkingEnrollment) {
+    return (
+      <div className="container mt-5 text-center">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-2">Checking enrollment status...</p>
+      </div>
+    );
+  }
 
   // If user is not enrolled and not faculty/admin, redirect to dashboard
   if (!isEnrolled && !canEdit) {
