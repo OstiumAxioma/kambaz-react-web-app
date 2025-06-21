@@ -3,8 +3,8 @@ const axiosWithCredentials = axios.create({ withCredentials: true });
 // Set up axios defaults to include credentials
 axios.defaults.withCredentials = true;
 
-// Remove trailing slash to prevent double slashes in URLs
-export const REMOTE_SERVER = import.meta.env.VITE_REMOTE_SERVER;
+// Remove trailing slash to prevent double slashes in URLs and provide default value
+export const REMOTE_SERVER = (import.meta.env.VITE_REMOTE_SERVER || "https://kambaz-node-server-app-a6-w66z.onrender.com").replace(/\/$/, '');
 export const USERS_API = `${REMOTE_SERVER}/api/users`;
 export const COURSES_API = `${REMOTE_SERVER}/api/courses`;
 
@@ -32,6 +32,7 @@ export const findUserById = async (id: string) => {
 console.log('Environment VITE_REMOTE_SERVER:', import.meta.env.VITE_REMOTE_SERVER);
 console.log('Resolved REMOTE_SERVER:', REMOTE_SERVER);
 console.log('USERS_API:', USERS_API);
+console.log('COURSES_API:', COURSES_API);
 
 export const createCourse = async (course: any) => {
   const { data } = await axiosWithCredentials.post(COURSES_API, course);

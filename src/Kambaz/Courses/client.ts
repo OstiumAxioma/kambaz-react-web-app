@@ -6,7 +6,7 @@ const axiosWithCredentials = axios.create({
 });
 
 // Remove trailing slash to prevent double slashes in URLs
-const REMOTE_SERVER = (import.meta.env.VITE_REMOTE_SERVER || "http://localhost:4000").replace(/\/$/, '');
+const REMOTE_SERVER = (import.meta.env.VITE_REMOTE_SERVER || "https://kambaz-node-server-app-a6-w66z.onrender.com").replace(/\/$/, '');
 console.log("Using remote server:", REMOTE_SERVER);
 
 const COURSES_API = `${REMOTE_SERVER}/api/courses`;

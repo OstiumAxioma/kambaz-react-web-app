@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import * as courseClient from "./Courses/client";
 import * as userClient from "./Account/client";
+import * as enrollmentsClient from "./Enrollments/client";
 
 export default function Kambaz() {
   const { currentUser } = useSelector((state: any) => state.accountReducer);
@@ -72,9 +73,9 @@ export default function Kambaz() {
   const updateEnrollment = async (courseId: string, enrolled: boolean) => {
     try {
       if (enrolled) {
-        await userClient.enrollIntoCourse(currentUser._id, courseId);
+        await enrollmentsClient.enrollInCourse(currentUser._id, courseId);
       } else {
-        await userClient.unenrollFromCourse(currentUser._id, courseId);
+        await enrollmentsClient.unenrollFromCourse(currentUser._id, courseId);
       }
       setCourses(
         courses.map((course) => {
