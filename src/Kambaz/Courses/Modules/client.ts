@@ -4,10 +4,12 @@ const axiosWithCredentials = axios.create({ withCredentials: true });
 // Remove trailing slash to prevent double slashes in URLs
 const REMOTE_SERVER = (import.meta.env.VITE_REMOTE_SERVER || "https://kambaz-node-server-app-a6-w66z.onrender.com").replace(/\/$/, '');
 const MODULES_API = `${REMOTE_SERVER}/api/modules`;
+const COURSES_API = `${REMOTE_SERVER}/api/courses`;
 
 export const findModulesForCourse = async (courseId: string) => {
   console.log("Fetching modules for course:", courseId);
-  const response = await axiosWithCredentials.get(`${MODULES_API}/courses/${courseId}/modules`);
+  // Use courses API as fallback since modules API might not be deployed yet
+  const response = await axiosWithCredentials.get(`${COURSES_API}/${courseId}/modules`);
   console.log("Modules response:", response.data);
   return response.data;
 };
