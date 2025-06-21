@@ -15,6 +15,9 @@ export const createAssignmentForCourse = async (courseId: string, assignment: an
   return response.data;
 };
 
+// Backward compatibility alias
+export const createAssignment = createAssignmentForCourse;
+
 export const updateAssignment = async (assignment: any) => {
   const response = await axiosWithCredentials.put(`${ASSIGNMENTS_API}/${assignment._id}`, assignment);
   return response.data;
